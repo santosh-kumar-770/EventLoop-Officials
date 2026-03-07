@@ -1,6 +1,11 @@
 from django.urls import path
-from .views import send_connection_request
+from . import views
 
 urlpatterns = [
-    path('connections/send/', send_connection_request),
+    path('send/', views.send_connection_request),
+    path('accept/', views.accept_connection_request),
+    path('my/', views.my_connections),
+    path('pending/', views.pending_requests),
+    path('reject/', views.reject_connection_request),
+    path('mutual/<int:user_id>/', views.mutual_connections),
 ]

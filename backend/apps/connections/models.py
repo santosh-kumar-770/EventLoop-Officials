@@ -30,5 +30,8 @@ class Connection(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        unique_together = ('sender', 'receiver')
+
     def __str__(self):
         return f"{self.sender} -> {self.receiver} ({self.status})"
