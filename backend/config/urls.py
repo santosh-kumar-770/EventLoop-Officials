@@ -22,4 +22,6 @@ urlpatterns = [
     path('api/events/', include('apps.events.urls')),
     path('api/registrations/', include('apps.registrations.urls')),
     path('api/connections/', include('apps.connections.urls')),
+    path('api/users/', include('apps.users.urls')),
+    path('api/dashboard/', include('apps.dashboard.urls')),
 ]

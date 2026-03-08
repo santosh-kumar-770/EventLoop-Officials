@@ -8,4 +8,5 @@ urlpatterns = [
     path('pending/', views.pending_requests),
     path('reject/', views.reject_connection_request),
     path('mutual/<int:user_id>/', views.mutual_connections),
+    path('suggestions/', views.connection_suggestions),
 ]

@@ -212,3 +212,64 @@ def mutual_connections(request, user_id):
         })
 
     return Response(result, status=200)
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def connection_suggestions(request):
+
+    user = request.user
+
+    # Step 1: get my connections
+    connections = Connection.objects.filter(
+        status="accepted"
+    ).filter(
+        Q(sender=user) | Q(receiver=user)
+    )
+
+    my_connections = []
+
+    for conn in connections:
+
+        if conn.sender == user:
+            my_connections.append(conn.receiver)
+
+        else:
+            my_connections.append(conn.sender)
+
+    # Step 2: find friends of friends
+    suggestions = {}
+
+    for friend in my_connections:
+
+        friend_connections = Connection.objects.filter(
+            status="accepted"
+        ).filter(
+            Q(sender=friend) | Q(receiver=friend)
+        )
+
+        for conn in friend_connections:
+
+            if conn.sender == friend:
+                candidate = conn.receiver
+            else:
+                candidate = conn.sender
+
+            # skip yourself
+            if candidate == user:
+                continue
+
+            # skip if already connected
+            if candidate in my_connections:
+                continue
+
+            # count mutual connections
+            if candidate.id not in suggestions:
+                suggestions[candidate.id] = {
+                    "id": candidate.id,
+                    "username": candidate.username,
+                    "mutual_connections": 1
+                }
+            else:
+                suggestions[candidate.id]["mutual_connections"] += 1
+
+    return Response(list(suggestions.values()))
