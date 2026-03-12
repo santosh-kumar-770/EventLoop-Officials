@@ -1,15 +1,14 @@
-import api from "../api/axios";
+import { sendConnectionRequest } from "../api/connections";
 
 function UserCard({ user }) {
 
-  const sendRequest = () => {
-    api.post("connections/send/", {
-      receiver_id: user.id
-    })
-    .then(() => {
+  const sendRequest = async () => {
+    try {
+      await sendConnectionRequest(user.id);
       alert("Connection request sent!");
-    })
-    .catch(err => console.error(err));
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   return (

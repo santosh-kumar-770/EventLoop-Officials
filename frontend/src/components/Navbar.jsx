@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 function Navbar() {
   return (
     <div style={{ background: "#000", width: "100%" }}>
@@ -9,13 +11,17 @@ function Navbar() {
           padding: "20px 40px"
         }}
       >
-        <h2 style={{ margin: 0 }}>UniVoice</h2>
+        <Link to="/" style={{ textDecoration: "none", color: "white" }}>
+          <h2 style={{ margin: 0 }}>UniVoice</h2>
+        </Link>
 
         <div style={{ display: "flex", gap: "30px" }}>
-          <a href="/">Dashboard</a>
-          <a href="/discover">Discover</a>
-          <a href="/events">Events</a>
-          <a href="/profile">Profile</a>
+          <Link to="/">Dashboard</Link>
+          <Link to="/discover">Discover</Link>
+          <Link to="/events">Events</Link>
+          <Link to="/network">Network</Link>
+          <Link to="/requests">Requests</Link>
+          <Link to="/profile/1">Profile</Link>
         </div>
       </div>
     </div>
