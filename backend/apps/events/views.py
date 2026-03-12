@@ -1,12 +1,14 @@
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework import status
-from apps.connections.models import Connection
 from django.db.models import Q
+from django.shortcuts import get_object_or_404
+
+from apps.connections.models import Connection
+from apps.registrations.models import EventRegistration
 from .models import Event
 from .serializers import EventSerializer
-from apps.registrations.models import EventRegistration
 
 
 # --------------------------------
@@ -14,6 +16,7 @@ from apps.registrations.models import EventRegistration
 # --------------------------------
 
 @api_view(['GET'])
+@permission_classes([AllowAny])
 def list_events(request):
 
     page = int(request.GET.get("page", 1))
@@ -47,6 +50,42 @@ def create_event(request):
 
 
 # --------------------------------
+# Register for Event
+# --------------------------------
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def register_event(request):
+
+    event_id = request.data.get("event")
+
+    if not event_id:
+        return Response(
+            {"error": "Event ID required"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    event = get_object_or_404(Event, id=event_id)
+
+    # Prevent duplicate registration
+    if EventRegistration.objects.filter(user=request.user, event=event).exists():
+        return Response(
+            {"message": "Already registered for this event"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    EventRegistration.objects.create(
+        user=request.user,
+        event=event
+    )
+
+    return Response(
+        {"message": "Registered successfully"},
+        status=status.HTTP_201_CREATED
+    )
+
+
+# --------------------------------
 # Event Attendees
 # --------------------------------
 
@@ -60,6 +99,7 @@ def event_attendees(request, event_id):
     attendee_ids = []
 
     for reg in registrations:
+
         user = reg.user
 
         attendee_ids.append(user.id)
@@ -69,7 +109,7 @@ def event_attendees(request, event_id):
             "username": user.username
         })
 
-    # get user's connections
+    # Get user's accepted connections
     connections = Connection.objects.filter(
         status="accepted"
     ).filter(
@@ -85,7 +125,7 @@ def event_attendees(request, event_id):
         else:
             connection_ids.append(conn.sender.id)
 
-    # find which connections are attending
+    # Find which connections are attending
     connections_attending = []
 
     for user in attendees:
@@ -100,7 +140,12 @@ def event_attendees(request, event_id):
     })
 
 
+# --------------------------------
+# Recommended Events
+# --------------------------------
+
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def recommended_events(request):
 
     user = request.user
