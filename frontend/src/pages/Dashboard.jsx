@@ -14,7 +14,7 @@ function Dashboard() {
 
   return (
     <div style={{ padding: "40px" }}>
-      <h1>UniVoice Dashboard 🚀</h1>
+      <h1>EventLoop Dashboard 🚀</h1>
 
       {!data && <p>Loading dashboard...</p>}
 

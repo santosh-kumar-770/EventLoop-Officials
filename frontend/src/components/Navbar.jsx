@@ -12,7 +12,7 @@ function Navbar() {
         }}
       >
         <Link to="/" style={{ textDecoration: "none", color: "white" }}>
-          <h2 style={{ margin: 0 }}>UniVoice</h2>
+          <h2 style={{ margin: 0 }}>EventLoop</h2>
         </Link>
 
         <div style={{ display: "flex", gap: "30px" }}>
