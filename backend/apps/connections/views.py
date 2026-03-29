@@ -272,4 +272,28 @@ def connection_suggestions(request):
             else:
                 suggestions[candidate.id]["mutual_connections"] += 1
 
+    # Fallback: if no friend-of-friend suggestions, show all other users
+    if not suggestions:
+        pending_ids = Connection.objects.filter(
+            Q(sender=user) | Q(receiver=user)
+        ).values_list('sender_id', 'receiver_id')
+
+        excluded_ids = set()
+        excluded_ids.add(user.id)
+        for sender_id, receiver_id in pending_ids:
+            excluded_ids.add(sender_id)
+            excluded_ids.add(receiver_id)
+
+        other_users = User.objects.exclude(id__in=excluded_ids)[:10]
+
+        fallback = []
+        for u in other_users:
+            fallback.append({
+                "id": u.id,
+                "username": u.username,
+                "mutual_connections": 0
+            })
+
+        return Response(fallback)
+
     return Response(list(suggestions.values()))

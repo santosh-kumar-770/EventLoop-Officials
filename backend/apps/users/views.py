@@ -6,6 +6,9 @@ from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from apps.connections.models import Connection
 from apps.registrations.models import EventRegistration
+from rest_framework.permissions import AllowAny
+from rest_framework import status
+from apps.users.models import Profile
 
 
 @api_view(['GET'])
@@ -95,3 +98,35 @@ def user_profile(request, user_id):
         "mutual_connections": mutual,
         "events_attending": events
     })
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def register_user(request):
+    username = request.data.get('username')
+    password = request.data.get('password')
+    email = request.data.get('email', '')
+
+    if not username or not password:
+        return Response(
+            {"error": "Username and password are required"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    if User.objects.filter(username=username).exists():
+        return Response(
+            {"error": "Username already taken"},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+
+    user = User.objects.create_user(
+        username=username,
+        password=password,
+        email=email
+    )
+
+    Profile.objects.create(user=user)
+
+    return Response(
+        {"message": "Account created successfully"},
+        status=status.HTTP_201_CREATED
+    )

@@ -6,7 +6,6 @@ function Requests() {
 
   const [requests, setRequests] = useState([]);
 
-  // Fetch pending requests
   useEffect(() => {
     api.get("connections/pending/")
       .then((res) => {
@@ -15,30 +14,23 @@ function Requests() {
       .catch((err) => console.error(err));
   }, []);
 
-  // Accept request
-  const handleAccept = async (id) => {
+  const handleAccept = async (connectionId) => {
     try {
-      await acceptConnection(id);
-
-      // remove request from UI
+      await acceptConnection(connectionId);
       setRequests((prev) =>
-        prev.filter((req) => req.id !== id)
+        prev.filter((req) => req.connection_id !== connectionId)
       );
-
     } catch (err) {
       console.error(err);
     }
   };
 
-  // Reject request
-  const handleReject = async (id) => {
+  const handleReject = async (connectionId) => {
     try {
-      await rejectConnection(id);
-
+      await rejectConnection(connectionId);
       setRequests((prev) =>
-        prev.filter((req) => req.id !== id)
+        prev.filter((req) => req.connection_id !== connectionId)
       );
-
     } catch (err) {
       console.error(err);
     }
@@ -46,14 +38,13 @@ function Requests() {
 
   return (
     <div>
-
       <h1>Connection Requests</h1>
 
       {requests.length === 0 && <p>No pending requests</p>}
 
       {requests.map((req) => (
         <div
-          key={req.id}
+          key={req.connection_id}
           style={{
             border: "1px solid #444",
             padding: "20px",
@@ -64,18 +55,15 @@ function Requests() {
             alignItems: "center"
           }}
         >
-          <h3>{req.sender.username}</h3>
+          <h3>@{req.username}</h3>
 
           <div style={{ display: "flex", gap: "10px" }}>
-
-            <button onClick={() => handleAccept(req.id)}>
+            <button onClick={() => handleAccept(req.connection_id)}>
               Accept
             </button>
-
-            <button onClick={() => handleReject(req.id)}>
+            <button onClick={() => handleReject(req.connection_id)}>
               Reject
             </button>
-
           </div>
 
         </div>

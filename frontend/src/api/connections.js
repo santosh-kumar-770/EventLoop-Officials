@@ -2,7 +2,7 @@ import api from "./axios";
 
 export const sendConnectionRequest = (receiverId) => {
   return api.post("connections/send/", {
-    receiver_id: receiverId
+    receiver: receiverId
   });
 };
 

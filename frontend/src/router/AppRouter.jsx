@@ -1,26 +1,63 @@
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Network from "../pages/Network";
 import Dashboard from "../pages/Dashboard";
 import Events from "../pages/Events";
 import Profile from "../pages/Profile";
 import Discover from "../pages/Discover";
 import Requests from "../pages/Requests";
+import Login from "../pages/Login";
+import Register from "../pages/Register";
 
 import MainLayout from "../layout/MainLayout";
+
+// Protects routes — redirects to /login if not logged in
+function PrivateRoute({ children }) {
+  const token = localStorage.getItem("access_token");
+  return token ? children : <Navigate to="/login" />;
+}
 
 function AppRouter() {
   return (
     <BrowserRouter>
-      <MainLayout>
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/events" element={<Events />} />
-          <Route path="/network" element={<Network />} />
-          <Route path="/profile/:id" element={<Profile />} />
-          <Route path="/discover" element={<Discover />} />
-          <Route path="/requests" element={<Requests />} />
-        </Routes>
-      </MainLayout>
+      <Routes>
+
+        {/* Public routes — no navbar, no layout */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+
+        {/* Protected routes — wrapped in MainLayout */}
+        <Route path="/" element={
+          <PrivateRoute>
+            <MainLayout><Dashboard /></MainLayout>
+          </PrivateRoute>
+        } />
+        <Route path="/events" element={
+          <PrivateRoute>
+            <MainLayout><Events /></MainLayout>
+          </PrivateRoute>
+        } />
+        <Route path="/network" element={
+          <PrivateRoute>
+            <MainLayout><Network /></MainLayout>
+          </PrivateRoute>
+        } />
+        <Route path="/profile/:id" element={
+          <PrivateRoute>
+            <MainLayout><Profile /></MainLayout>
+          </PrivateRoute>
+        } />
+        <Route path="/discover" element={
+          <PrivateRoute>
+            <MainLayout><Discover /></MainLayout>
+          </PrivateRoute>
+        } />
+        <Route path="/requests" element={
+          <PrivateRoute>
+            <MainLayout><Requests /></MainLayout>
+          </PrivateRoute>
+        } />
+
+      </Routes>
     </BrowserRouter>
   );
 }
