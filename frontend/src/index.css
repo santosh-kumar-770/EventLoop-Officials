@@ -1,11 +1,29 @@
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background-color: #1e1e1e;
-  color: white;
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0d0d0f;
+  --surface: #16181f;
+  --surface2: #1a1d24;
+  --border: #1e2130;
+  --blue: #3b82f6;
+  --indigo: #6366f1;
+  --green: #22c55e;
+  --red: #ef4444;
+  --text: #f1f5f9;
+  --muted: #94a3b8;
+  --dim: #64748b;
 }
 
-a {
-  text-decoration: none;
-  color: #5c7cff;
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  min-height: 100vh;
 }
+
+a { color: var(--blue); text-decoration: none; }
+a:hover { color: var(--text); }
+
+h1, h2, h3 { font-family: 'Syne', sans-serif; }

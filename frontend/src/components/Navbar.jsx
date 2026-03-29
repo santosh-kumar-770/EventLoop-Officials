@@ -3,17 +3,14 @@ import { jwtDecode } from "jwt-decode";
 
 function Navbar() {
   const navigate = useNavigate();
+  const path = window.location.pathname;
 
-  // Get logged-in user's ID from token
   let userId = null;
   const token = localStorage.getItem("access_token");
   if (token) {
     try {
-      const decoded = jwtDecode(token);
-      userId = decoded.user_id;
-    } catch (e) {
-      userId = null;
-    }
+      userId = jwtDecode(token).user_id;
+    } catch (e) {}
   }
 
   const handleLogout = () => {
@@ -22,45 +19,96 @@ function Navbar() {
     navigate("/login");
   };
 
+  const navLinks = [
+    { to: "/", label: "Dashboard" },
+    { to: "/discover", label: "Discover" },
+    { to: "/events", label: "Events" },
+    { to: "/network", label: "Network" },
+    { to: "/requests", label: "Requests" },
+    { to: `/profile/${userId}`, label: "Profile" },
+  ];
+
   return (
-    <div style={{ background: "#000", width: "100%" }}>
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          padding: "20px 40px"
-        }}
-      >
-        <Link to="/" style={{ textDecoration: "none", color: "white" }}>
-          <h2 style={{ margin: 0 }}>EventLoop</h2>
+    <nav style={{
+      background: "rgba(13,13,15,0.95)",
+      borderBottom: "1px solid var(--border)",
+      backdropFilter: "blur(12px)",
+      position: "sticky",
+      top: 0,
+      zIndex: 100,
+    }}>
+      <div style={{
+        maxWidth: "1200px",
+        margin: "0 auto",
+        padding: "0 32px",
+        height: "60px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+      }}>
+        <Link to="/" style={{ textDecoration: "none" }}>
+          <span style={{
+            fontFamily: "Syne, sans-serif",
+            fontWeight: 800,
+            fontSize: "20px",
+            color: "var(--text)",
+            letterSpacing: "0.5px",
+          }}>
+            Event<span style={{ color: "var(--blue)" }}>Loop</span>
+          </span>
         </Link>
 
-        <div style={{ display: "flex", gap: "30px", alignItems: "center" }}>
-          <Link to="/">Dashboard</Link>
-          <Link to="/discover">Discover</Link>
-          <Link to="/events">Events</Link>
-          <Link to="/network">Network</Link>
-          <Link to="/requests">Requests</Link>
-          <Link to={`/profile/${userId}`}>Profile</Link>
+        <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+          {navLinks.map(({ to, label }) => {
+            const active = path === to;
+            return (
+              <Link
+                key={to}
+                to={to}
+                style={{
+                  padding: "6px 14px",
+                  borderRadius: "8px",
+                  fontSize: "13px",
+                  fontWeight: active ? 600 : 400,
+                  color: active ? "var(--blue)" : "var(--muted)",
+                  background: active ? "rgba(59,130,246,0.08)" : "transparent",
+                  transition: "all 0.15s",
+                  textDecoration: "none",
+                }}
+              >
+                {label}
+              </Link>
+            );
+          })}
 
           <button
             onClick={handleLogout}
             style={{
-              background: "transparent",
-              border: "1px solid #ff4d4d",
-              color: "#ff4d4d",
+              marginLeft: "12px",
               padding: "6px 16px",
-              borderRadius: "6px",
+              borderRadius: "8px",
+              border: "1px solid var(--red)",
+              background: "transparent",
+              color: "var(--red)",
+              fontSize: "13px",
               cursor: "pointer",
-              fontSize: "14px",
+              fontFamily: "DM Sans, sans-serif",
+              transition: "all 0.15s",
+            }}
+            onMouseEnter={e => {
+              e.target.style.background = "var(--red)";
+              e.target.style.color = "white";
+            }}
+            onMouseLeave={e => {
+              e.target.style.background = "transparent";
+              e.target.style.color = "var(--red)";
             }}
           >
             Logout
           </button>
         </div>
       </div>
-    </div>
+    </nav>
   );
 }
 
