@@ -26,6 +26,7 @@ function Navbar() {
     { to: "/network", label: "Network" },
     { to: "/requests", label: "Requests" },
     { to: `/profile/${userId}`, label: "Profile" },
+    { to: "/messages", label: "Messages" },
   ];
 
   return (

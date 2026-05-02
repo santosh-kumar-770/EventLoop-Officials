@@ -7,7 +7,8 @@ import Discover from "../pages/Discover";
 import Requests from "../pages/Requests";
 import Login from "../pages/Login";
 import Register from "../pages/Register";
-
+import Messages from "../pages/Messages";
+import Chat from "../pages/Chat";
 import MainLayout from "../layout/MainLayout";
 
 // Protects routes — redirects to /login if not logged in
@@ -55,6 +56,12 @@ function AppRouter() {
           <PrivateRoute>
             <MainLayout><Requests /></MainLayout>
           </PrivateRoute>
+        } />
+        <Route path="/messages" element={
+          <PrivateRoute><MainLayout><Messages /></MainLayout></PrivateRoute>
+        } />
+        <Route path="/messages/:userId" element={
+          <PrivateRoute><MainLayout><Chat /></MainLayout></PrivateRoute>
         } />
 
       </Routes>

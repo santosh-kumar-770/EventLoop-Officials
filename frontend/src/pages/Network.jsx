@@ -57,48 +57,67 @@ function Network() {
       {connections.map(user => (
         <div
           key={user.id}
-          onClick={() => navigate(`/profile/${user.id}`)}
           style={{
             background: "var(--surface)",
             border: "1px solid var(--border)",
             borderRadius: "12px",
             padding: "20px 24px",
             marginBottom: "12px",
-            cursor: "pointer",
             display: "flex",
             alignItems: "center",
             gap: "16px",
-            transition: "border-color 0.2s, transform 0.2s",
-          }}
-          onMouseEnter={e => {
-            e.currentTarget.style.borderColor = "#2a3040";
-            e.currentTarget.style.transform = "translateX(4px)";
-          }}
-          onMouseLeave={e => {
-            e.currentTarget.style.borderColor = "var(--border)";
-            e.currentTarget.style.transform = "translateX(0)";
+            transition: "border-color 0.2s",
           }}
         >
-          <div style={{
-            width: "42px",
-            height: "42px",
-            borderRadius: "50%",
-            background: "linear-gradient(135deg, var(--blue), var(--indigo))",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            fontFamily: "Syne, sans-serif",
-            fontWeight: 700,
-            fontSize: "16px",
-            color: "white",
-            flexShrink: 0,
-          }}>
+          {/* Avatar — clicks to profile */}
+          <div
+            onClick={() => navigate(`/profile/${user.id}`)}
+            style={{
+              width: "42px",
+              height: "42px",
+              borderRadius: "50%",
+              background: "linear-gradient(135deg, var(--blue), var(--indigo))",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontFamily: "Syne, sans-serif",
+              fontWeight: 700,
+              fontSize: "16px",
+              color: "white",
+              flexShrink: 0,
+              cursor: "pointer",
+            }}
+          >
             {user.username[0].toUpperCase()}
           </div>
-          <div>
+
+          {/* Name — clicks to profile */}
+          <div
+            onClick={() => navigate(`/profile/${user.id}`)}
+            style={{ flex: 1, cursor: "pointer" }}
+          >
             <div style={{ fontWeight: 600, fontSize: "15px" }}>@{user.username}</div>
             <div style={{ fontSize: "12px", color: "var(--dim)", marginTop: "2px" }}>View profile →</div>
           </div>
+
+          {/* Message button */}
+          <button
+            onClick={() => navigate(`/messages/${user.id}`)}
+            style={{
+              padding: "8px 18px",
+              borderRadius: "8px",
+              border: "1px solid var(--blue)",
+              background: "rgba(59,130,246,0.1)",
+              color: "var(--blue)",
+              fontSize: "13px",
+              fontWeight: 600,
+              cursor: "pointer",
+              fontFamily: "DM Sans, sans-serif",
+              flexShrink: 0,
+            }}
+          >
+            💬 Message
+          </button>
         </div>
       ))}
     </div>

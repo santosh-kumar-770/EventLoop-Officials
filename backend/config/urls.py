@@ -25,6 +25,7 @@ urlpatterns = [
     path('api/connections/', include('apps.connections.urls')),
     path('api/users/', include('apps.users.urls')),
     path('api/dashboard/', include('apps.dashboard.urls')),
+    path('api/messaging/', include('apps.messaging.urls')),
 
     # Auth endpoints
     path('api/auth/login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
