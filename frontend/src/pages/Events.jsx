@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../api/axios";
 
 function Events() {
   const [events, setEvents] = useState([]);
   const [joined, setJoined] = useState({});
+  const navigate = useNavigate();
 
   useEffect(() => {
     api.get("events/")
@@ -110,6 +112,23 @@ function Events() {
               }}
             >
               {joined[event.id] ? "Joined ✓" : "Join Event"}
+            </button>
+
+            <button
+              onClick={() => navigate(`/events/${event.id}/lobby`)}
+              style={{
+                padding: "10px 20px",
+                borderRadius: "10px",
+                border: "1px solid var(--border)",
+                background: "transparent",
+                color: "var(--muted)",
+                fontSize: "14px",
+                fontWeight: 600,
+                cursor: "pointer",
+                fontFamily: "DM Sans, sans-serif",
+              }}
+            >
+              👥 View Lobby
             </button>
           </div>
         ))}

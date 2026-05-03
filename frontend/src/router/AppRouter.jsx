@@ -10,6 +10,7 @@ import Register from "../pages/Register";
 import Messages from "../pages/Messages";
 import Chat from "../pages/Chat";
 import MainLayout from "../layout/MainLayout";
+import EventLobby from "../pages/EventLobby";
 
 // Protects routes — redirects to /login if not logged in
 function PrivateRoute({ children }) {
@@ -62,6 +63,9 @@ function AppRouter() {
         } />
         <Route path="/messages/:userId" element={
           <PrivateRoute><MainLayout><Chat /></MainLayout></PrivateRoute>
+        } />
+        <Route path="/events/:eventId/lobby" element={
+          <PrivateRoute><MainLayout><EventLobby /></MainLayout></PrivateRoute>
         } />
 
       </Routes>
