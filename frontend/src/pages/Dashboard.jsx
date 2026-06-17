@@ -5,21 +5,32 @@ import api from "../api/axios";
 
 function Dashboard() {
   const [data, setData] = useState(null);
+  const [username, setUsername] = useState(""); // NEW: State for the username
   const navigate = useNavigate();
 
-  let username = "there";
-  let userId = null;
-  try {
-    const token = localStorage.getItem("access_token");
-    if (token) {
-      const decoded = jwtDecode(token);
-      username = decoded.username || "there";
-      userId = decoded.user_id;
-    }
-  } catch (e) {}
-
   useEffect(() => {
+    // 1. Fetch the dashboard data
     api.get("dashboard/").then(res => setData(res.data)).catch(console.error);
+
+    // 2. Bulletproof Username Fetching
+    try {
+      const token = localStorage.getItem("access_token");
+      if (token) {
+        const decoded = jwtDecode(token);
+        
+        // Try to get it from the token first
+        if (decoded.username) {
+          setUsername(decoded.username);
+        } else if (decoded.user_id) {
+          // Fallback: Fetch it directly from the API if token doesn't have it
+          api.get(`users/${decoded.user_id}/`)
+            .then(res => setUsername(res.data.username))
+            .catch(err => console.error("Failed to fetch username", err));
+        }
+      }
+    } catch (e) {
+      console.error("Failed to parse token", e);
+    }
   }, []);
 
   const greeting = () => {
@@ -44,7 +55,8 @@ function Dashboard() {
         <div style={{ position: "absolute", top: "-20px", right: "0", width: "200px", height: "200px", borderRadius: "50%", background: "radial-gradient(circle, rgba(79,142,247,0.06) 0%, transparent 70%)", pointerEvents: "none" }} />
         <div className="section-label">{greeting()}</div>
         <h1 style={{ fontSize: "36px", fontWeight: 800, marginBottom: "8px", letterSpacing: "-0.03em" }}>
-          Hey, <span style={{ background: "linear-gradient(135deg, var(--blue), var(--indigo))", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>@{username}</span> 👋
+          {/* UPDATED: Gracefully falls back to "there" only while loading */}
+          Hey, <span style={{ background: "linear-gradient(135deg, var(--blue), var(--indigo))", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>@{username || "there"}</span> 👋
         </h1>
         <p style={{ color: "var(--muted)", fontSize: "15px" }}>
           Here's what's happening in your campus network
