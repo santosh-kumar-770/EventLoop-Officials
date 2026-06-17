@@ -7,7 +7,6 @@ from apps.events.models import Event
 from apps.connections.models import Connection
 from apps.registrations.models import EventRegistration
 
-
 @api_view(['GET'])
 def dashboard(request):
 
@@ -35,8 +34,9 @@ def dashboard(request):
         connections_activity = [
             {
                 "id": c.id,
-                "sender": c.sender.username,
-                "receiver": c.receiver.username
+                # Fix: Send these as objects so React can read them correctly
+                "sender": {"id": c.sender.id, "username": c.sender.username},
+                "receiver": {"id": c.receiver.id, "username": c.receiver.username}
             }
             for c in connections
         ]

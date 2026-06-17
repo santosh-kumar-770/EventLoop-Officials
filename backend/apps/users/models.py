@@ -3,25 +3,19 @@ from django.db import models
 
 
 class Profile(models.Model):
-
-    YEAR_CHOICES = [
-        ('1', 'First Year'),
-        ('2', 'Second Year'),
-        ('3', 'Third Year'),
-        ('4', 'Fourth Year'),
-        ('5', 'Fifth Year+'),
-        ('alumni', 'Alumni'),
-    ]
-
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-    bio = models.TextField(blank=True)
-    college = models.CharField(max_length=200, blank=True)
-    major = models.CharField(max_length=200, blank=True)
-    year = models.CharField(max_length=10, choices=YEAR_CHOICES, blank=True)
-    skills = models.CharField(max_length=300, blank=True)
-    interests = models.CharField(max_length=300, blank=True)
-    linkedin = models.URLField(blank=True)
-    twitter = models.CharField(max_length=100, blank=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    bio = models.TextField(blank=True, null=True)
+    college = models.CharField(max_length=200, blank=True, null=True)
+    major = models.CharField(max_length=100, blank=True, null=True)
+    year = models.CharField(max_length=10, blank=True, null=True)
+    skills = models.TextField(blank=True, null=True)
+    interests = models.TextField(blank=True, null=True)
+    linkedin = models.URLField(blank=True, null=True)
+    twitter = models.URLField(blank=True, null=True)
+    
+    # NEW FIELDS:
+    profile_picture = models.ImageField(upload_to='profiles/', blank=True, null=True)
+    backdrop = models.ImageField(upload_to='backdrops/', blank=True, null=True)
 
     def __str__(self):
-        return self.user.username
+        return f"{self.user.username}'s Profile"

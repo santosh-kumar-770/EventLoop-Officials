@@ -10,7 +10,6 @@ from apps.registrations.models import EventRegistration
 from .models import Event
 from .serializers import EventSerializer
 
-
 # --------------------------------
 # List All Events
 # --------------------------------
@@ -36,7 +35,8 @@ def list_events(request):
 def create_event(request):
     serializer = EventSerializer(data=request.data)
     if serializer.is_valid():
-        serializer.save()
+        # Automatically assign the logged-in user as the organizer
+        serializer.save(organizer=request.user)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -51,9 +51,12 @@ def register_event(request):
     event_id = request.data.get("event")
     if not event_id:
         return Response({"error": "Event ID required"}, status=status.HTTP_400_BAD_REQUEST)
+    
     event = get_object_or_404(Event, id=event_id)
+    
     if EventRegistration.objects.filter(user=request.user, event=event).exists():
         return Response({"message": "Already registered for this event"}, status=status.HTTP_400_BAD_REQUEST)
+    
     EventRegistration.objects.create(user=request.user, event=event)
     return Response({"message": "Registered successfully"}, status=status.HTTP_201_CREATED)
 
@@ -141,6 +144,7 @@ def recommended_events(request):
             connection_ids.append(conn.receiver.id)
         else:
             connection_ids.append(conn.sender.id)
+            
     registrations = EventRegistration.objects.filter(user_id__in=connection_ids)
     events = []
     for reg in registrations:

@@ -11,6 +11,7 @@ import Messages from "../pages/Messages";
 import Chat from "../pages/Chat";
 import MainLayout from "../layout/MainLayout";
 import EventLobby from "../pages/EventLobby";
+import Settings from "../pages/Settings"; // <-- Added the new import
 
 // Protects routes — redirects to /login if not logged in
 function PrivateRoute({ children }) {
@@ -48,6 +49,14 @@ function AppRouter() {
             <MainLayout><Profile /></MainLayout>
           </PrivateRoute>
         } />
+        
+        {/* NEW SETTINGS ROUTE */}
+        <Route path="/settings" element={
+          <PrivateRoute>
+            <MainLayout><Settings /></MainLayout>
+          </PrivateRoute>
+        } />
+
         <Route path="/discover" element={
           <PrivateRoute>
             <MainLayout><Discover /></MainLayout>

@@ -10,7 +10,7 @@ from apps.registrations.models import EventRegistration
 from apps.users.models import Profile
 
 
-def serialize_profile(user):
+def serialize_profile(request, user):
     try:
         p = user.profile
         return {
@@ -22,6 +22,9 @@ def serialize_profile(user):
             "interests": p.interests,
             "linkedin": p.linkedin,
             "twitter": p.twitter,
+            # Safely generate the full URL for React
+            "profile_picture": request.build_absolute_uri(p.profile_picture.url) if p.profile_picture and hasattr(p.profile_picture, 'url') else None,
+            "backdrop": request.build_absolute_uri(p.backdrop.url) if p.backdrop and hasattr(p.backdrop, 'url') else None,
         }
     except Exception:
         return {}
@@ -82,7 +85,8 @@ def user_profile(request, user_id):
     return Response({
         "id": user.id,
         "username": user.username,
-        "profile": serialize_profile(user),
+        # Passed 'request' into the serializer here
+        "profile": serialize_profile(request, user),
         "connections_count": connections_count,
         "mutual_connections": mutual,
         "events_attending": events,
@@ -94,12 +98,32 @@ def user_profile(request, user_id):
 @permission_classes([IsAuthenticated])
 def update_profile(request):
     profile, _ = Profile.objects.get_or_create(user=request.user)
+    
+    # 1. Update standard text fields
     fields = ['bio', 'college', 'major', 'year', 'skills', 'interests', 'linkedin', 'twitter']
     for field in fields:
         if field in request.data:
             setattr(profile, field, request.data[field])
+            
+    # 2. Handle Image Removals FIRST
+    if request.data.get('remove_profile_picture') == 'true':
+        if profile.profile_picture:
+            profile.profile_picture.delete(save=False) # Actually deletes the file from /media/
+            
+    if request.data.get('remove_backdrop') == 'true':
+        if profile.backdrop:
+            profile.backdrop.delete(save=False)
+            
+    # 3. Handle NEW uploaded files
+    if 'profile_picture' in request.FILES:
+        profile.profile_picture = request.FILES['profile_picture']
+    if 'backdrop' in request.FILES:
+        profile.backdrop = request.FILES['backdrop']
+        
     profile.save()
-    return Response({"message": "Profile updated", "profile": serialize_profile(request.user)})
+    
+    # Passed 'request' into the serializer here too
+    return Response({"message": "Profile updated", "profile": serialize_profile(request, request.user)})
 
 
 @api_view(['POST'])

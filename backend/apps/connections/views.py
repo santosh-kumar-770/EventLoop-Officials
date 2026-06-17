@@ -4,7 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from django.db.models import Q
 from django.contrib.auth.models import User
-
+from django.shortcuts import get_object_or_404
 from .models import Connection
 from .serializers import ConnectionSerializer
 
@@ -72,40 +72,28 @@ def my_connections(request):
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def send_connection_request(request):
+def send_connection_request(request, receiver_id):
+    receiver = get_object_or_404(User, id=receiver_id)
+    
+    if request.user == receiver:
+        return Response({"error": "You cannot connect with yourself."}, status=status.HTTP_400_BAD_REQUEST)
 
-    receiver_id = request.data.get("receiver")
-
-    if not receiver_id:
-        return Response({"error": "Receiver id required"}, status=400)
-
-    if int(receiver_id) == request.user.id:
-        return Response({"error": "You cannot connect with yourself"}, status=400)
-
-    try:
-        receiver = User.objects.get(id=receiver_id)
-    except User.DoesNotExist:
-        return Response({"error": "User not found"}, status=404)
-
-    # check existing connection
-    existing = Connection.objects.filter(
+    # Check if a connection or request already exists between these two users
+    existing_connection = Connection.objects.filter(
         Q(sender=request.user, receiver=receiver) |
         Q(sender=receiver, receiver=request.user)
     ).first()
 
-    if existing:
-        return Response({"error": "Connection already exists or pending"}, status=400)
+    if existing_connection:
+        return Response(
+            {"message": f"Connection is already {existing_connection.status}"}, 
+            status=status.HTTP_400_BAD_REQUEST
+        )
 
-    connection = Connection.objects.create(
-        sender=request.user,
-        receiver=receiver,
-        status="pending"
-    )
-
-    serializer = ConnectionSerializer(connection)
-
-    return Response(serializer.data, status=201)
-
+    # Create the new pending connection
+    Connection.objects.create(sender=request.user, receiver=receiver, status="pending")
+    
+    return Response({"message": "Connection request sent!"}, status=status.HTTP_201_CREATED)
 
 # ----------------------------------------
 # Pending Requests

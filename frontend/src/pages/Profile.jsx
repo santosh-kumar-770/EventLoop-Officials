@@ -1,272 +1,198 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { jwtDecode } from "jwt-decode";
 import api from "../api/axios";
 
-const YEAR_LABELS = {
-  "1": "First Year", "2": "Second Year", "3": "Third Year",
-  "4": "Fourth Year", "5": "Fifth Year+", "alumni": "Alumni"
-};
-
 function Profile() {
-  const { id } = useParams();
+  const { id } = useParams(); // Gets the user ID from the URL
   const navigate = useNavigate();
-  const [profile, setProfile] = useState(null);
+  const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [editing, setEditing] = useState(false);
-  const [form, setForm] = useState({});
-  const [saving, setSaving] = useState(false);
-
-  let currentUserId = null;
-  try {
-    const token = localStorage.getItem("access_token");
-    if (token) currentUserId = jwtDecode(token).user_id;
-  } catch (e) {}
-
-  const isOwnProfile = parseInt(id) === currentUserId;
+  const [error, setError] = useState("");
 
   useEffect(() => {
     setLoading(true);
-    api.get(`users/profile/${id}/`)
+    // Fetch profile data from your existing backend view
+    api.get(`users/${id}/`)
       .then(res => {
-        setProfile(res.data);
-        setForm(res.data.profile || {});
+        setData(res.data);
+        setLoading(false);
       })
-      .catch(console.error)
-      .finally(() => setLoading(false));
+      .catch(err => {
+        setError("Profile not found");
+        setLoading(false);
+      });
   }, [id]);
-
-  const handleSave = async () => {
-    setSaving(true);
-    try {
-      const res = await api.put("users/profile/update/", form);
-      setProfile(prev => ({ ...prev, profile: res.data.profile }));
-      setEditing(false);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setSaving(false);
-    }
-  };
 
   const handleConnect = async () => {
     try {
-      await api.post("connections/send/", { receiver: profile.id });
-      setProfile(prev => ({ ...prev, connection_status: "pending" }));
+      await api.post(`connections/request/${id}/`);
+      // Optimistically update the UI so the button changes immediately
+      setData(prev => ({ ...prev, connection_status: "pending" }));
     } catch (err) {
-      console.error(err);
+      console.error("Failed to send request", err);
     }
   };
 
-  if (loading) return <div style={{ maxWidth: "700px", margin: "0 auto", padding: "60px 32px", color: "var(--dim)" }}>Loading...</div>;
-  if (!profile) return <div style={{ maxWidth: "700px", margin: "0 auto", padding: "60px 32px", color: "var(--dim)" }}>User not found.</div>;
+  // Helper to split comma-separated strings into arrays for UI tags
+  const renderTags = (tagString) => {
+    if (!tagString) return <span style={{ color: "var(--dim)", fontSize: "13px" }}>None specified</span>;
+    return tagString.split(",").map((tag, i) => (
+      <span key={i} style={{
+        background: "var(--surface2)", padding: "4px 12px", borderRadius: "20px",
+        fontSize: "12px", fontWeight: 600, color: "var(--blue)", border: "1px solid var(--border)"
+      }}>
+        {tag.trim()}
+      </span>
+    ));
+  };
 
-  const p = profile.profile || {};
+  if (loading) return <div style={{ display: "flex", justifyContent: "center", padding: "60px" }}><div className="spinner" /></div>;
+  if (error) return <div style={{ textAlign: "center", padding: "40px", color: "var(--red)" }}>{error}</div>;
+  if (!data) return null;
+
+  const { profile } = data;
 
   return (
-    <div style={{ maxWidth: "700px", margin: "0 auto", padding: "40px 32px" }}>
+    <div style={{ maxWidth: "800px", margin: "0 auto", paddingBottom: "40px" }}>
 
-      {/* Header card */}
-      <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "16px", padding: "28px", marginBottom: "20px" }}>
-        <div style={{ display: "flex", alignItems: "flex-start", gap: "20px" }}>
+      {/* Banner & Avatar Section */}
+      <div className="animate-fadeUp" style={{
+        background: "var(--surface)", border: "1px solid var(--border)",
+        borderRadius: "20px", overflow: "hidden", marginBottom: "24px", position: "relative"
+      }}>
+        
+        {/* Decorative Banner - NOW DYNAMIC */}
+        <div style={{ 
+          height: "120px", 
+          background: profile.backdrop ? `url(${profile.backdrop}) center/cover` : "linear-gradient(135deg, var(--blue), var(--indigo))",
+          opacity: profile.backdrop ? 1 : 0.8 
+        }} />
 
-          {/* Avatar */}
-          <div style={{ width: "64px", height: "64px", borderRadius: "50%", background: "linear-gradient(135deg, var(--blue), var(--indigo))", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "Syne, sans-serif", fontWeight: 800, fontSize: "24px", color: "white", flexShrink: 0 }}>
-            {profile.username[0].toUpperCase()}
-          </div>
+        <div style={{ padding: "0 32px 32px 32px", display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginTop: "-40px", position: "relative", zIndex: 10 }}>
 
-          <div style={{ flex: 1 }}>
-            <h1 style={{ fontSize: "22px", fontWeight: 800, margin: "0 0 4px 0" }}>@{profile.username}</h1>
-            <div style={{ fontSize: "13px", color: "var(--dim)", marginBottom: "8px" }}>
-              {profile.connections_count} connection{profile.connections_count !== 1 ? "s" : ""}
+          {/* FIX APPLIED HERE: Changed alignItems to "flex-start" */}
+          <div style={{ display: "flex", alignItems: "flex-start", gap: "20px" }}>
+            
+            {/* Avatar Profile Picture - NOW DYNAMIC */}
+            <div style={{
+              width: "100px", height: "100px", borderRadius: "24px", 
+              background: profile.profile_picture ? `url(${profile.profile_picture}) center/cover` : "var(--surface)",
+              border: "4px solid var(--surface)", display: "flex", alignItems: "center",
+              justifyContent: "center", fontSize: "36px", fontWeight: 800, color: "var(--blue)",
+              boxShadow: "0 8px 24px rgba(0,0,0,0.2)"
+            }}>
+              {!profile.profile_picture && data.username[0].toUpperCase()}
             </div>
 
-            {/* Major + Year badges */}
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-              {p.major && (
-                <span style={{ fontSize: "12px", padding: "3px 10px", borderRadius: "20px", background: "rgba(59,130,246,0.1)", color: "var(--blue)", fontWeight: 500 }}>
-                  {p.major}
-                </span>
-              )}
-              {p.year && (
-                <span style={{ fontSize: "12px", padding: "3px 10px", borderRadius: "20px", background: "rgba(99,102,241,0.1)", color: "#818cf8", fontWeight: 500 }}>
-                  {YEAR_LABELS[p.year] || p.year}
-                </span>
-              )}
-              {p.college && (
-                <span style={{ fontSize: "12px", padding: "3px 10px", borderRadius: "20px", background: "var(--surface)", border: "1px solid var(--border)", color: "var(--muted)", fontWeight: 500 }}>
-                  🏫 {p.college}
-                </span>
-              )}
+            {/* FIX APPLIED HERE: Added marginTop to slide text down */}
+            <div style={{ marginTop: "32px" }}>
+              <h1 style={{ fontSize: "28px", fontWeight: 800, margin: 0 }}>@{data.username}</h1>
+              <p style={{ color: "var(--dim)", margin: "4px 0 0 0", fontSize: "14px" }}>
+                {profile.major || "Undeclared"} • {profile.college || "University"}
+              </p>
             </div>
           </div>
 
-          {/* Action buttons */}
-          <div style={{ display: "flex", gap: "8px", flexShrink: 0 }}>
-            {isOwnProfile ? (
-              <button onClick={() => setEditing(!editing)} style={{ padding: "8px 18px", borderRadius: "8px", border: "1px solid var(--border)", background: "transparent", color: "var(--muted)", fontSize: "13px", fontWeight: 600, cursor: "pointer", fontFamily: "DM Sans, sans-serif" }}>
-                {editing ? "Cancel" : "✏️ Edit"}
-              </button>
+          {/* Action Button based on connection_status */}
+          <div style={{ paddingBottom: "8px" }}>
+            {data.connection_status === "self" ? (
+              <button className="btn btn-outline-blue" onClick={() => navigate('/settings')}>Edit Profile</button>
+            ) : data.connection_status === "accepted" ? (
+              <button className="btn btn-outline-blue" onClick={() => navigate(`/messages/${data.id}`)}>Message</button>
+            ) : data.connection_status === "pending" ? (
+              <button disabled style={{ background: "var(--surface2)", border: "none", padding: "10px 16px", borderRadius: "8px", color: "var(--dim)" }}>Request Sent</button>
             ) : (
-              <>
-                {profile.connection_status === "accepted" && (
-                  <button onClick={() => navigate(`/messages/${profile.id}`)} style={{ padding: "8px 18px", borderRadius: "8px", border: "none", background: "linear-gradient(135deg, var(--blue), var(--indigo))", color: "white", fontSize: "13px", fontWeight: 600, cursor: "pointer", fontFamily: "DM Sans, sans-serif" }}>
-                    💬 Message
-                  </button>
-                )}
-                {profile.connection_status === "none" && (
-                  <button onClick={handleConnect} style={{ padding: "8px 18px", borderRadius: "8px", border: "1px solid var(--blue)", background: "rgba(59,130,246,0.1)", color: "var(--blue)", fontSize: "13px", fontWeight: 600, cursor: "pointer", fontFamily: "DM Sans, sans-serif" }}>
-                    + Connect
-                  </button>
-                )}
-                {profile.connection_status === "pending" && (
-                  <button disabled style={{ padding: "8px 18px", borderRadius: "8px", border: "1px solid var(--border)", background: "transparent", color: "var(--dim)", fontSize: "13px", fontFamily: "DM Sans, sans-serif" }}>
-                    Request Sent
-                  </button>
-                )}
-              </>
+              <button
+                onClick={handleConnect}
+                style={{
+                  background: "linear-gradient(135deg, var(--blue), var(--indigo))", color: "white",
+                  border: "none", padding: "10px 20px", borderRadius: "8px", fontWeight: 600, cursor: "pointer"
+                }}>
+                Connect ⬡
+              </button>
             )}
           </div>
         </div>
-
-        {/* Bio */}
-        {p.bio && !editing && (
-          <p style={{ color: "var(--muted)", fontSize: "14px", lineHeight: "1.7", marginTop: "20px", marginBottom: 0 }}>{p.bio}</p>
-        )}
-
-        {/* Socials */}
-        {(p.linkedin || p.twitter) && !editing && (
-          <div style={{ display: "flex", gap: "16px", marginTop: "16px" }}>
-            {p.linkedin && (
-              <a href={p.linkedin} target="_blank" rel="noreferrer" style={{ fontSize: "13px", color: "var(--blue)", textDecoration: "none" }}>
-                🔗 LinkedIn
-              </a>
-            )}
-            {p.twitter && (
-              <a href={`https://twitter.com/${p.twitter.replace("@", "")}`} target="_blank" rel="noreferrer" style={{ fontSize: "13px", color: "var(--blue)", textDecoration: "none" }}>
-                𝕏 @{p.twitter.replace("@", "")}
-              </a>
-            )}
-          </div>
-        )}
       </div>
 
-      {/* Edit form */}
-      {editing && (
-        <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "16px", padding: "28px", marginBottom: "20px" }}>
-          <h2 style={{ fontSize: "16px", fontWeight: 700, marginTop: 0, marginBottom: "20px" }}>Edit Profile</h2>
+      <div className="animate-fadeUp-1" style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: "24px" }}>
 
-          <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
-            {[
-              { label: "Bio", key: "bio", type: "textarea", placeholder: "Tell people about yourself..." },
-              { label: "College / University", key: "college", placeholder: "e.g. MIT" },
-              { label: "Major", key: "major", placeholder: "e.g. Computer Science" },
-              { label: "Skills", key: "skills", placeholder: "e.g. Python, React, Design (comma separated)" },
-              { label: "Interests", key: "interests", placeholder: "e.g. AI, Startups, Music (comma separated)" },
-              { label: "LinkedIn URL", key: "linkedin", placeholder: "https://linkedin.com/in/yourname" },
-              { label: "Twitter / X handle", key: "twitter", placeholder: "@yourhandle" },
-            ].map(({ label, key, type, placeholder }) => (
-              <div key={key}>
-                <label style={{ fontSize: "12px", color: "var(--dim)", fontWeight: 600, display: "block", marginBottom: "6px" }}>{label}</label>
-                {type === "textarea" ? (
-                  <textarea
-                    value={form[key] || ""}
-                    onChange={e => setForm(prev => ({ ...prev, [key]: e.target.value }))}
-                    placeholder={placeholder}
-                    rows={3}
-                    style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)", fontSize: "14px", fontFamily: "DM Sans, sans-serif", resize: "vertical", outline: "none", boxSizing: "border-box" }}
-                  />
-                ) : (
-                  <input
-                    value={form[key] || ""}
-                    onChange={e => setForm(prev => ({ ...prev, [key]: e.target.value }))}
-                    placeholder={placeholder}
-                    style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)", fontSize: "14px", fontFamily: "DM Sans, sans-serif", outline: "none", boxSizing: "border-box" }}
-                  />
-                )}
+        {/* Left Column: Details */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+          {/* Bio */}
+          <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "20px", padding: "28px" }}>
+            <h3 style={{ fontSize: "16px", fontWeight: 700, marginBottom: "12px" }}>About</h3>
+            <p style={{ color: "var(--muted)", fontSize: "15px", lineHeight: "1.6", whiteSpace: "pre-wrap" }}>
+              {profile.bio || "This user hasn't written a bio yet."}
+            </p>
+          </div>
+
+          {/* Skills & Interests */}
+          <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "20px", padding: "28px" }}>
+            <div style={{ marginBottom: "24px" }}>
+              <h3 style={{ fontSize: "16px", fontWeight: 700, marginBottom: "12px" }}>Skills</h3>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+                {renderTags(profile.skills)}
               </div>
-            ))}
-
-            {/* Year dropdown */}
+            </div>
             <div>
-              <label style={{ fontSize: "12px", color: "var(--dim)", fontWeight: 600, display: "block", marginBottom: "6px" }}>Year</label>
-              <select
-                value={form.year || ""}
-                onChange={e => setForm(prev => ({ ...prev, year: e.target.value }))}
-                style={{ width: "100%", padding: "10px 14px", borderRadius: "8px", border: "1px solid var(--border)", background: "var(--bg)", color: "var(--text)", fontSize: "14px", fontFamily: "DM Sans, sans-serif", outline: "none" }}
-              >
-                <option value="">Select year</option>
-                {Object.entries(YEAR_LABELS).map(([val, label]) => (
-                  <option key={val} value={val}>{label}</option>
+              <h3 style={{ fontSize: "16px", fontWeight: 700, marginBottom: "12px" }}>Interests</h3>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+                {renderTags(profile.interests)}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column: Network & Events */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+
+          {/* Network Stats */}
+          <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "20px", padding: "28px" }}>
+            <h3 style={{ fontSize: "16px", fontWeight: 700, marginBottom: "16px" }}>Network</h3>
+            <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "16px" }}>
+              <div style={{ fontSize: "24px", color: "var(--blue)" }}>⬡</div>
+              <div>
+                <div style={{ fontSize: "18px", fontWeight: 800 }}>{data.connections_count}</div>
+                <div style={{ fontSize: "12px", color: "var(--dim)" }}>Connections</div>
+              </div>
+            </div>
+
+            {data.mutual_connections?.length > 0 && (
+              <div style={{ borderTop: "1px solid var(--border)", paddingTop: "16px", marginTop: "8px" }}>
+                <div style={{ fontSize: "12px", fontWeight: 600, color: "var(--dim)", marginBottom: "8px" }}>MUTUALS</div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+                  {data.mutual_connections.map(m => (
+                    <span key={m.id} onClick={() => navigate(`/profile/${m.id}`)} style={{
+                      fontSize: "12px", color: "var(--blue)", cursor: "pointer"
+                    }}>@{m.username}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Events Attending */}
+          <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "20px", padding: "28px" }}>
+            <h3 style={{ fontSize: "16px", fontWeight: 700, marginBottom: "16px" }}>Attending</h3>
+            {data.events_attending?.length === 0 ? (
+              <p style={{ color: "var(--dim)", fontSize: "13px" }}>Not registered for any events.</p>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                {data.events_attending.map(event => (
+                  <div key={event.id} onClick={() => navigate(`/events/${event.id}/lobby`)} style={{
+                    padding: "10px 12px", background: "var(--surface2)", borderRadius: "8px",
+                    fontSize: "13px", fontWeight: 600, cursor: "pointer", borderLeft: "2px solid var(--indigo)"
+                  }}>
+                    {event.title}
+                  </div>
                 ))}
-              </select>
-            </div>
+              </div>
+            )}
           </div>
 
-          <button
-            onClick={handleSave}
-            disabled={saving}
-            style={{ marginTop: "20px", padding: "10px 28px", borderRadius: "10px", border: "none", background: "linear-gradient(135deg, var(--blue), var(--indigo))", color: "white", fontSize: "14px", fontWeight: 600, cursor: "pointer", fontFamily: "DM Sans, sans-serif" }}
-          >
-            {saving ? "Saving..." : "Save Profile"}
-          </button>
         </div>
-      )}
-
-      {/* Skills */}
-      {p.skills && !editing && (
-        <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "16px", padding: "24px", marginBottom: "20px" }}>
-          <h2 style={{ fontSize: "15px", fontWeight: 700, marginTop: 0, marginBottom: "14px" }}>Skills</h2>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-            {p.skills.split(",").map((s, i) => (
-              <span key={i} style={{ fontSize: "13px", padding: "5px 14px", borderRadius: "20px", background: "rgba(59,130,246,0.1)", color: "var(--blue)", fontWeight: 500 }}>
-                {s.trim()}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Interests */}
-      {p.interests && !editing && (
-        <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "16px", padding: "24px", marginBottom: "20px" }}>
-          <h2 style={{ fontSize: "15px", fontWeight: 700, marginTop: 0, marginBottom: "14px" }}>Interests</h2>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-            {p.interests.split(",").map((s, i) => (
-              <span key={i} style={{ fontSize: "13px", padding: "5px 14px", borderRadius: "20px", background: "rgba(99,102,241,0.1)", color: "#818cf8", fontWeight: 500 }}>
-                {s.trim()}
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Mutual connections */}
-      <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "16px", padding: "24px", marginBottom: "20px" }}>
-        <h2 style={{ fontSize: "15px", fontWeight: 700, marginTop: 0, marginBottom: "14px" }}>Mutual Connections</h2>
-        {profile.mutual_connections.length === 0
-          ? <p style={{ color: "var(--dim)", fontSize: "14px", margin: 0 }}>No mutual connections</p>
-          : profile.mutual_connections.map(u => (
-            <div key={u.id} onClick={() => navigate(`/profile/${u.id}`)} style={{ fontSize: "14px", color: "var(--muted)", marginBottom: "8px", cursor: "pointer" }}>
-              @{u.username}
-            </div>
-          ))
-        }
       </div>
-
-      {/* Events attending */}
-      <div style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "16px", padding: "24px" }}>
-        <h2 style={{ fontSize: "15px", fontWeight: 700, marginTop: 0, marginBottom: "14px" }}>Events Attending</h2>
-        {profile.events_attending.length === 0
-          ? <p style={{ color: "var(--dim)", fontSize: "14px", margin: 0 }}>Not attending any events yet</p>
-          : profile.events_attending.map(event => (
-            <div key={event.id} onClick={() => navigate(`/events/${event.id}/lobby`)} style={{ background: "var(--bg)", borderRadius: "8px", padding: "12px 16px", marginBottom: "10px", fontSize: "14px", cursor: "pointer", color: "var(--muted)", border: "1px solid var(--border)" }}>
-              {event.title} →
-            </div>
-          ))
-        }
-      </div>
-
     </div>
   );
 }
