@@ -1,14 +1,12 @@
 from django.urls import path
 from . import views
-from .views import send_connection_request
 
 urlpatterns = [
-    path('send/', views.send_connection_request),
-    path('accept/', views.accept_connection_request),
-    path('my/', views.my_connections),
-    path('pending/', views.pending_requests),
-    path('reject/', views.reject_connection_request),
-    path('mutual/<int:user_id>/', views.mutual_connections),
-    path('suggestions/', views.connection_suggestions),
-    path('request/<int:receiver_id>/', send_connection_request, name='send_request'),
+    path('my/', views.my_connections, name='my_connections'),
+    path('pending/', views.pending_requests, name='pending_requests'),
+    path('requests/', views.pending_requests, name='get_requests'), # Alias for your frontend call
+    path('handle/<int:conn_id>/', views.handle_connection, name='handle_connection'),
+    path('mutual/<int:user_id>/', views.mutual_connections, name='mutual_connections'),
+    path('suggestions/', views.connection_suggestions, name='connection_suggestions'),
+    path('request/<int:receiver_id>/', views.send_connection_request, name='send_request'),
 ]

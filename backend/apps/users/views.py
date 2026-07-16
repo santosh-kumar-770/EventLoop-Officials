@@ -33,11 +33,22 @@ def serialize_profile(request, user):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def search_users(request):
-    query = request.GET.get("q")
-    if not query:
-        return Response([])
-    users = User.objects.filter(username__icontains=query)[:10]
-    results = [{"id": u.id, "username": u.username} for u in users]
+    query = request.GET.get("q", "")
+    # Find users whose username or major matches the search
+    users = User.objects.filter(
+        Q(username__icontains=query) | 
+        Q(profile__major__icontains=query)
+    ).exclude(id=request.user.id)[:20] # Don't show yourself
+    
+    results = []
+    for u in users:
+        results.append({
+            "id": u.id,
+            "username": u.username,
+            "major": u.profile.major,
+            "college": u.profile.college,
+            "profile_picture": request.build_absolute_uri(u.profile.profile_picture.url) if u.profile.profile_picture else None
+        })
     return Response(results)
 
 

@@ -2,69 +2,49 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
+from django.shortcuts import get_object_or_404
 
 from apps.events.models import Event
 from .models import EventRegistration
+# Assuming you create a simple serializer or use this dictionary approach
+# I've kept it dictionary-based but cleaned up the logic:
 
-
-# Register for an event
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def register_for_event(request, event_id):
+    event = get_object_or_404(Event, id=event_id)
 
-    try:
-        event = Event.objects.get(id=event_id)
-    except Event.DoesNotExist:
-        return Response({"error": "Event not found"}, status=404)
-
-    # prevent duplicate registration
-    if EventRegistration.objects.filter(user=request.user, event=event).exists():
-        return Response({"error": "Already registered for this event"}, status=400)
-
-    EventRegistration.objects.create(
-        user=request.user,
+    # Use get_or_create to simplify the logic
+    registration, created = EventRegistration.objects.get_or_create(
+        user=request.user, 
         event=event
     )
+    
+    if not created:
+        return Response({"error": "Already registered for this event"}, status=status.HTTP_400_BAD_REQUEST)
 
-    return Response(
-        {"message": "Successfully registered"},
-        status=status.HTTP_201_CREATED
-    )
+    return Response({"message": "Successfully registered"}, status=status.HTTP_201_CREATED)
 
-
-# Cancel registration
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def cancel_registration(request, event_id):
+    # One-liner deletion attempt
+    deleted_count, _ = EventRegistration.objects.filter(
+        user=request.user, 
+        event_id=event_id
+    ).delete()
 
-    try:
-        registration = EventRegistration.objects.get(
-            user=request.user,
-            event_id=event_id
-        )
-    except EventRegistration.DoesNotExist:
-        return Response({"error": "Registration not found"}, status=404)
+    if deleted_count == 0:
+        return Response({"error": "Registration not found"}, status=status.HTTP_404_NOT_FOUND)
 
-    registration.delete()
+    return Response({"message": "Registration cancelled"}, status=status.HTTP_200_OK)
 
-    return Response({"message": "Registration cancelled"})
-
-
-# My registered events
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def my_registered_events(request):
-
-    registrations = EventRegistration.objects.filter(user=request.user)
-
-    events = []
-
-    for reg in registrations:
-        event = reg.event
-
-        events.append({
-            "event_id": event.id,
-            "title": event.title
-        })
-
+    # Using values() is faster and cleaner for simple lists
+    events = EventRegistration.objects.filter(user=request.user).values(
+        'event_id', 
+        'event__title'
+    )
     return Response(events)

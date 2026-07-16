@@ -155,3 +155,20 @@ def recommended_events(request):
             "connection": reg.user.username
         })
     return Response(events)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def event_lobby_data(request, event_id):
+    event = get_object_or_404(Event, id=event_id)
+    # Get all users registered for this event
+    registrations = EventRegistration.objects.filter(event=event)
+    attendees = [
+        {"id": reg.user.id, "username": reg.user.username} 
+        for reg in registrations
+    ]
+    
+    return Response({
+        "event": {"title": event.title, "description": event.description, "date": event.event_date},
+        "attendees": attendees
+    })
