@@ -76,7 +76,6 @@ function Chat() {
   return (
     <div style={{ maxWidth: "700px", margin: "0 auto", height: "calc(100vh - 72px)", display: "flex", flexDirection: "column", padding: "0 16px" }}>
 
-      {/* Header */}
       <div style={{ display: "flex", alignItems: "center", gap: "14px", padding: "20px 0 16px", borderBottom: "1px solid var(--border)", flexShrink: 0 }}>
         <button onClick={() => navigate("/messages")} style={{ background: "transparent", border: "none", color: "var(--muted)", cursor: "pointer", fontSize: "20px", padding: "4px" }}>←</button>
         <div onClick={() => navigate(`/profile/${userId}`)} style={{ width: "40px", height: "40px", borderRadius: "50%", background: "linear-gradient(135deg, var(--blue), var(--indigo))", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: "15px", color: "white", cursor: "pointer", fontFamily: "Syne, sans-serif", flexShrink: 0 }}>
@@ -88,7 +87,6 @@ function Chat() {
         </div>
       </div>
 
-      {/* Messages */}
       <div style={{ flex: 1, overflowY: "auto", padding: "20px 0", display: "flex", flexDirection: "column", gap: "4px" }}>
         {messages.length === 0 && (
           <div style={{ textAlign: "center", padding: "40px 0" }}>
@@ -101,12 +99,22 @@ function Chat() {
           if (item.type === "date") return (
             <div key={`date-${i}`} style={{ textAlign: "center", margin: "16px 0 8px", fontSize: "12px", color: "var(--dim)" }}>{item.label}</div>
           );
-          const isMine = item.sender === currentUserId;
+          
+          const isMine = Number(item.sender) === Number(currentUserId);
           return (
-            <div key={item.id} style={{ display: "flex", justifyContent: isMine ? "flex-end" : "flex-start", marginBottom: "2px" }}>
-              <div style={{ maxWidth: "72%", padding: "10px 14px", borderRadius: isMine ? "18px 18px 4px 18px" : "18px 18px 18px 4px", background: isMine ? "linear-gradient(135deg, var(--blue), var(--indigo))" : "var(--surface)", border: isMine ? "none" : "1px solid var(--border)", color: isMine ? "white" : "var(--text)", fontSize: "14px", lineHeight: "1.5", wordBreak: "break-word" }}>
+            <div key={item.id} style={{ display: "flex", justifyContent: isMine ? "flex-end" : "flex-start", marginBottom: "8px" }}>
+              <div style={{ 
+                maxWidth: "72%", padding: "10px 14px", 
+                borderRadius: isMine ? "18px 18px 4px 18px" : "18px 18px 18px 4px", 
+                background: isMine ? "var(--blue)" : "var(--surface)", 
+                border: isMine ? "none" : "1px solid var(--border)", 
+                color: isMine ? "white" : "var(--text)", 
+                fontSize: "14px", lineHeight: "1.5", wordBreak: "break-word" 
+              }}>
                 {item.content}
-                <div style={{ fontSize: "10px", opacity: 0.65, marginTop: "4px", textAlign: isMine ? "right" : "left" }}>{formatTime(item.created_at)}</div>
+                <div style={{ fontSize: "10px", opacity: 0.65, marginTop: "4px", textAlign: isMine ? "right" : "left" }}>
+                    {formatTime(item.created_at)}
+                </div>
               </div>
             </div>
           );
@@ -114,18 +122,17 @@ function Chat() {
         <div ref={bottomRef} />
       </div>
 
-      {/* Input */}
       <div style={{ display: "flex", gap: "10px", padding: "16px 0 20px", borderTop: "1px solid var(--border)", flexShrink: 0 }}>
         <textarea
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); } }}
-          placeholder="Type a message... (Enter to send)"
+          placeholder="Type a message..."
           rows={1}
-          style={{ flex: 1, padding: "12px 16px", borderRadius: "12px", border: "1px solid var(--border)", background: "var(--surface)", color: "var(--text)", fontSize: "14px", fontFamily: "DM Sans, sans-serif", resize: "none", outline: "none", lineHeight: "1.5" }}
+          style={{ flex: 1, padding: "12px 16px", borderRadius: "12px", border: "1px solid var(--border)", background: "var(--surface)", color: "var(--text)", fontSize: "14px", resize: "none", outline: "none" }}
         />
         <button onClick={handleSend} disabled={!input.trim() || sending}
-          style={{ padding: "12px 20px", borderRadius: "12px", border: input.trim() ? "none" : "1px solid var(--border)", background: input.trim() ? "linear-gradient(135deg, var(--blue), var(--indigo))" : "var(--surface)", color: input.trim() ? "white" : "var(--dim)", fontSize: "14px", fontWeight: 600, cursor: input.trim() ? "pointer" : "default", fontFamily: "DM Sans, sans-serif", flexShrink: 0 }}>
+          style={{ padding: "12px 20px", borderRadius: "12px", border: "none", background: input.trim() ? "var(--blue)" : "var(--surface)", color: input.trim() ? "white" : "var(--dim)", fontSize: "14px", fontWeight: 600, cursor: input.trim() ? "pointer" : "default" }}>
           {sending ? "..." : "Send"}
         </button>
       </div>

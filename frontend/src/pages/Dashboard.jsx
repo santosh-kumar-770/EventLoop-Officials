@@ -5,7 +5,7 @@ import api from "../api/axios";
 
 function Dashboard() {
   const [data, setData] = useState(null);
-  const [username, setUsername] = useState(""); // NEW: State for the username
+  const [username, setUsername] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -18,11 +18,10 @@ function Dashboard() {
       if (token) {
         const decoded = jwtDecode(token);
         
-        // Try to get it from the token first
         if (decoded.username) {
           setUsername(decoded.username);
         } else if (decoded.user_id) {
-          // Fallback: Fetch it directly from the API if token doesn't have it
+          // Fallback: Fetch directly from API if username isn't in token
           api.get(`users/${decoded.user_id}/`)
             .then(res => setUsername(res.data.username))
             .catch(err => console.error("Failed to fetch username", err));
@@ -55,7 +54,6 @@ function Dashboard() {
         <div style={{ position: "absolute", top: "-20px", right: "0", width: "200px", height: "200px", borderRadius: "50%", background: "radial-gradient(circle, rgba(79,142,247,0.06) 0%, transparent 70%)", pointerEvents: "none" }} />
         <div className="section-label">{greeting()}</div>
         <h1 style={{ fontSize: "36px", fontWeight: 800, marginBottom: "8px", letterSpacing: "-0.03em" }}>
-          {/* UPDATED: Gracefully falls back to "there" only while loading */}
           Hey, <span style={{ background: "linear-gradient(135deg, var(--blue), var(--indigo))", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>@{username || "there"}</span> 👋
         </h1>
         <p style={{ color: "var(--muted)", fontSize: "15px" }}>
@@ -70,14 +68,8 @@ function Dashboard() {
             key={to}
             onClick={() => navigate(to)}
             style={{
-              background: "var(--surface)",
-              border: "1px solid var(--border)",
-              borderRadius: "var(--radius)",
-              padding: "20px",
-              cursor: "pointer",
-              transition: "all 0.2s",
-              position: "relative",
-              overflow: "hidden",
+              background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)",
+              padding: "20px", cursor: "pointer", transition: "all 0.2s", position: "relative", overflow: "hidden",
             }}
             onMouseEnter={e => {
               e.currentTarget.style.transform = "translateY(-3px)";
@@ -98,7 +90,8 @@ function Dashboard() {
         ))}
       </div>
 
-      {!data && (
+      {/* Content Grid */}
+      {!data ? (
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
           {[1, 2].map(i => (
             <div key={i} style={{ background: "var(--surface)", border: "1px solid var(--border)", borderRadius: "var(--radius)", padding: "28px", height: "260px" }}>
@@ -107,9 +100,7 @@ function Dashboard() {
             </div>
           ))}
         </div>
-      )}
-
-      {data && (
+      ) : (
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
 
           {/* Upcoming Events */}
@@ -119,46 +110,38 @@ function Dashboard() {
                 <div className="section-label">UPCOMING</div>
                 <h2 style={{ fontSize: "17px", fontWeight: 700 }}>Events</h2>
               </div>
-              <button onClick={() => navigate("/events")} style={{ background: "transparent", border: "none", color: "var(--blue)", fontSize: "13px", cursor: "pointer", fontFamily: "DM Sans, sans-serif", fontWeight: 500 }}>
+              <button onClick={() => navigate("/events")} style={{ background: "transparent", border: "none", color: "var(--blue)", fontSize: "13px", cursor: "pointer", fontWeight: 500 }}>
                 View all →
               </button>
             </div>
 
-            {data.upcoming_events?.length === 0 && (
+            {data.upcoming_events?.length === 0 ? (
               <div style={{ textAlign: "center", padding: "32px 0" }}>
                 <div style={{ fontSize: "32px", marginBottom: "10px" }}>◈</div>
                 <p style={{ color: "var(--dim)", fontSize: "13px", marginBottom: "14px" }}>No upcoming events</p>
                 <button onClick={() => navigate("/events")} className="btn btn-outline-blue" style={{ fontSize: "13px", padding: "8px 16px" }}>Browse Events</button>
               </div>
-            )}
-
-            {(data.upcoming_events || []).map((event, i) => (
-              <div
-                key={event.id}
-                onClick={() => navigate(`/events/${event.id}/lobby`)}
-                style={{
-                  padding: "14px 16px",
-                  background: "var(--surface2)",
-                  borderRadius: "10px",
-                  marginBottom: "10px",
-                  borderLeft: "2px solid var(--blue)",
-                  cursor: "pointer",
-                  transition: "all 0.15s",
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  animationDelay: `${i * 0.05}s`,
-                }}
-                onMouseEnter={e => { e.currentTarget.style.background = "var(--surface3)"; e.currentTarget.style.transform = "translateX(3px)"; }}
-                onMouseLeave={e => { e.currentTarget.style.background = "var(--surface2)"; e.currentTarget.style.transform = "translateX(0)"; }}
-              >
-                <div>
-                  <div style={{ fontWeight: 600, fontSize: "14px", marginBottom: "3px" }}>{event.title}</div>
-                  {event.event_date && <div style={{ fontSize: "12px", color: "var(--dim)" }}>📅 {new Date(event.event_date).toLocaleDateString([], { month: "short", day: "numeric" })}</div>}
+            ) : (
+              (data.upcoming_events || []).map((event, i) => (
+                <div
+                  key={event.id}
+                  onClick={() => navigate(`/events/${event.id}/lobby`)}
+                  style={{
+                    padding: "14px 16px", background: "var(--surface2)", borderRadius: "10px", marginBottom: "10px",
+                    borderLeft: "2px solid var(--blue)", cursor: "pointer", transition: "all 0.15s",
+                    display: "flex", justifyContent: "space-between", alignItems: "center",
+                  }}
+                  onMouseEnter={e => { e.currentTarget.style.background = "var(--surface3)"; e.currentTarget.style.transform = "translateX(3px)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = "var(--surface2)"; e.currentTarget.style.transform = "translateX(0)"; }}
+                >
+                  <div>
+                    <div style={{ fontWeight: 600, fontSize: "14px", marginBottom: "3px" }}>{event.title}</div>
+                    {event.event_date && <div style={{ fontSize: "12px", color: "var(--dim)" }}>📅 {new Date(event.event_date).toLocaleDateString([], { month: "short", day: "numeric" })}</div>}
+                  </div>
+                  <span style={{ fontSize: "11px", color: "var(--blue)", fontWeight: 600 }}>Lobby →</span>
                 </div>
-                <span style={{ fontSize: "11px", color: "var(--blue)", fontWeight: 600 }}>Lobby →</span>
-              </div>
-            ))}
+              ))
+            )}
           </div>
 
           {/* Connections Activity */}
@@ -168,7 +151,7 @@ function Dashboard() {
                 <div className="section-label">NETWORK</div>
                 <h2 style={{ fontSize: "17px", fontWeight: 700 }}>Activity</h2>
               </div>
-              <button onClick={() => navigate("/network")} style={{ background: "transparent", border: "none", color: "var(--blue)", fontSize: "13px", cursor: "pointer", fontFamily: "DM Sans, sans-serif", fontWeight: 500 }}>
+              <button onClick={() => navigate("/network")} style={{ background: "transparent", border: "none", color: "var(--blue)", fontSize: "13px", cursor: "pointer", fontWeight: 500 }}>
                 View all →
               </button>
             </div>
@@ -187,15 +170,8 @@ function Dashboard() {
                     key={i}
                     onClick={() => navigate(`/profile/${other?.id}`)}
                     style={{
-                      padding: "12px 16px",
-                      background: "var(--surface2)",
-                      borderRadius: "10px",
-                      marginBottom: "10px",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "12px",
-                      cursor: "pointer",
-                      transition: "all 0.15s",
+                      padding: "12px 16px", background: "var(--surface2)", borderRadius: "10px", marginBottom: "10px",
+                      display: "flex", alignItems: "center", gap: "12px", cursor: "pointer", transition: "all 0.15s",
                     }}
                     onMouseEnter={e => { e.currentTarget.style.background = "var(--surface3)"; }}
                     onMouseLeave={e => { e.currentTarget.style.background = "var(--surface2)"; }}
