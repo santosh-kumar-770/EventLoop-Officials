@@ -21,13 +21,31 @@ function Events() {
   }, []);
 
   return (
-    <div style={{ maxWidth: "1000px", margin: "0 auto" }}>
-      <div className="animate-fadeUp" style={{ marginBottom: "32px" }}>
-        <div className="section-label">DISCOVER</div>
-        <h1 style={{ fontSize: "32px", fontWeight: 800 }}>Upcoming Events</h1>
-        <p style={{ color: "var(--dim)", fontSize: "15px", marginTop: "8px" }}>
-          Find events and start networking before they begin.
-        </p>
+    <div style={{ maxWidth: "1000px", margin: "0 auto", padding: "40px 32px" }}>
+      {/* Header Section with Host Button */}
+      <div className="animate-fadeUp" style={{ marginBottom: "32px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div>
+          <div className="section-label">DISCOVER</div>
+          <h1 style={{ fontSize: "32px", fontWeight: 800 }}>Upcoming Events</h1>
+          <p style={{ color: "var(--dim)", fontSize: "15px", marginTop: "8px" }}>
+            Find events and start networking before they begin.
+          </p>
+        </div>
+        <button 
+          onClick={() => navigate("/events/create")} 
+          style={{ 
+            padding: "12px 24px", 
+            borderRadius: "10px", 
+            border: "none", 
+            background: "var(--blue)", 
+            color: "white", 
+            fontWeight: 600, 
+            cursor: "pointer",
+            fontSize: "14px"
+          }}
+        >
+          + Host an Event
+        </button>
       </div>
 
       {loading ? (
@@ -38,7 +56,7 @@ function Events() {
         <div style={{ textAlign: "center", padding: "60px 0", background: "var(--surface)", borderRadius: "20px", border: "1px solid var(--border)" }}>
           <div style={{ fontSize: "48px", marginBottom: "16px" }}>📅</div>
           <h3 style={{ fontSize: "18px", marginBottom: "8px" }}>No events found</h3>
-          <p style={{ color: "var(--dim)", fontSize: "14px" }}>Check back later for new campus events.</p>
+          <p style={{ color: "var(--dim)", fontSize: "14px" }}>Check back later or be the first to host one!</p>
         </div>
       ) : (
         <div className="animate-fadeUp-1" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))", gap: "20px" }}>

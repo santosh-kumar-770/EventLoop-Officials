@@ -35,7 +35,6 @@ def list_events(request):
 def create_event(request):
     serializer = EventSerializer(data=request.data)
     if serializer.is_valid():
-        # Automatically assign the logged-in user as the organizer
         serializer.save(organizer=request.user)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

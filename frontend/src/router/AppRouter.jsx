@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Network from "../pages/Network";
 import Dashboard from "../pages/Dashboard";
 import Events from "../pages/Events";
+import CreateEvent from "../pages/CreateEvent"; // <-- Added import
 import Profile from "../pages/Profile";
 import Discover from "../pages/Discover";
 import Requests from "../pages/Requests";
@@ -11,7 +12,7 @@ import Messages from "../pages/Messages";
 import Chat from "../pages/Chat";
 import MainLayout from "../layout/MainLayout";
 import EventLobby from "../pages/EventLobby";
-import Settings from "../pages/Settings"; // <-- Added the new import
+import Settings from "../pages/Settings";
 
 // Protects routes — redirects to /login if not logged in
 function PrivateRoute({ children }) {
@@ -24,11 +25,11 @@ function AppRouter() {
     <BrowserRouter>
       <Routes>
 
-        {/* Public routes — no navbar, no layout */}
+        {/* Public routes */}
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
 
-        {/* Protected routes — wrapped in MainLayout */}
+        {/* Protected routes */}
         <Route path="/" element={
           <PrivateRoute>
             <MainLayout><Dashboard /></MainLayout>
@@ -37,6 +38,12 @@ function AppRouter() {
         <Route path="/events" element={
           <PrivateRoute>
             <MainLayout><Events /></MainLayout>
+          </PrivateRoute>
+        } />
+        {/* NEW CREATE EVENT ROUTE */}
+        <Route path="/events/create" element={
+          <PrivateRoute>
+            <MainLayout><CreateEvent /></MainLayout>
           </PrivateRoute>
         } />
         <Route path="/network" element={
@@ -49,14 +56,11 @@ function AppRouter() {
             <MainLayout><Profile /></MainLayout>
           </PrivateRoute>
         } />
-        
-        {/* NEW SETTINGS ROUTE */}
         <Route path="/settings" element={
           <PrivateRoute>
             <MainLayout><Settings /></MainLayout>
           </PrivateRoute>
         } />
-
         <Route path="/discover" element={
           <PrivateRoute>
             <MainLayout><Discover /></MainLayout>
