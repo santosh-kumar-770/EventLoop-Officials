@@ -33,6 +33,13 @@ def list_events(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_event(request):
+    # Check if the user's category allows hosting
+    if request.user.role not in ['host', 'admin']:
+        return Response(
+            {"error": "You do not have permission to host events. Please apply for host status."}, 
+            status=status.HTTP_403_FORBIDDEN
+        )
+    
     serializer = EventSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save(organizer=request.user)

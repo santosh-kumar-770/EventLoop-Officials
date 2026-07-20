@@ -1,5 +1,8 @@
 import { useState } from "react";
 import api from "../api/axios";
+import "./CreateEvent.css";
+
+// Step Component Imports
 import BasicInfoStep from "../components/event-steps/BasicInfoStep";
 import DateTimeStep from "../components/event-steps/DateTimeStep";
 import LocationStep from "../components/event-steps/LocationStep";
@@ -12,12 +15,34 @@ import PrizesStep from "../components/event-steps/PrizesStep";
 import ResourcesStep from "../components/event-steps/ResourcesStep";
 import VisibilityStep from "../components/event-steps/VisibilityStep";
 import FinalizationStep from "../components/event-steps/FinalizationStep";
-import "./CreateEvent.css";
 
 function CreateEvent() {
   const [step, setStep] = useState(1);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    title: "", description: "", location_data: {}, schedule: [], speakers: [], prizes: []
+    title: "",
+    tagline: "",
+    description: "",
+    category: "Hackathon",
+    start_date: "",
+    end_date: "",
+    location_data: { type: "offline" },
+    org_name: "",
+    contact_email: "",
+    linkedin: "",
+    registration_required: true,
+    max_participants: "",
+    target_audience: "students",
+    skills: "",
+    schedule: [],
+    speakers: [],
+    prizes: [],
+    repo: "",
+    social: "",
+    visibility: "public",
+    support_email: "",
+    certificates: false,
+    terms: false
   });
 
   const renderStep = () => {
@@ -43,30 +68,59 @@ function CreateEvent() {
   };
 
   const handleSubmit = async () => {
+    setLoading(true);
     try {
       await api.post("events/create/", formData);
       alert("Event Published Successfully!");
-    } catch (err) { console.error("Error publishing event:", err); }
+      window.location.href = "/events";
+    } catch (err) {
+      console.error("Error publishing event:", err);
+      alert("Failed to publish event. Please check your inputs.");
+    } finally {
+      setLoading(false);
+    }
   };
 
+  // Calculate percentage for the animated bar (Step 1 to 16)
+  const progressPercentage = (step / 16) * 100;
+
   return (
-    <div className="create-event-container">
-      <div className="step-header">
-        <h1>Host an Event</h1>
-        <p>Section {step} of 16</p>
-      </div>
+    <div className="create-event-wrapper">
+      <div className="create-event-card">
+        <div className="event-progress-header">
+          <h2>Host an Event</h2>
+          <span className="step-indicator">Step {step} of 16</span>
+        </div>
 
-      <div className="form-group">
-        {renderStep()}
-      </div>
+        {/* Animated Progress Bar */}
+        <div className="progress-bar-container">
+          <div 
+            className="progress-bar-fill" 
+            style={{ width: `${progressPercentage}%` }}
+          />
+        </div>
 
-      <div className="nav-buttons">
-        <button className="btn-back" disabled={step === 1} onClick={() => setStep(step - 1)}>Back</button>
-        {step < 16 ? (
-          <button className="btn-next" onClick={() => setStep(step + 1)}>Next</button>
-        ) : (
-          <button className="btn-submit" onClick={handleSubmit}>Publish</button>
-        )}
+        <div className="form-step-content">
+          {renderStep()}
+        </div>
+
+        <div className="event-nav-actions">
+          {step > 1 ? (
+            <button className="btn-prev" onClick={() => setStep(step - 1)}>
+              Back
+            </button>
+          ) : <div />}
+
+          {step < 16 ? (
+            <button className="btn-next" onClick={() => setStep(step + 1)}>
+              Next Step
+            </button>
+          ) : (
+            <button className="btn-submit" onClick={handleSubmit} disabled={loading}>
+              {loading ? "Publishing..." : "Publish Event"}
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

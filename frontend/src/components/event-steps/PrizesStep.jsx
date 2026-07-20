@@ -1,27 +1,38 @@
-function PrizesStep({ data, update }) {
+export default function PrizesStep({ data, update }) {
+  const prizes = data.prizes || [];
+
   const addPrize = () => {
-    update({ ...data, prizes: [...(data.prizes || []), { rank: "", reward: "" }] });
+    update({ ...data, prizes: [...prizes, { rank: "", reward: "" }] });
+  };
+
+  const updatePrize = (index, field, value) => {
+    const updated = [...prizes];
+    updated[index][field] = value;
+    update({ ...data, prizes: updated });
   };
 
   return (
-    <div>
-      <h3>Prizes</h3>
-      {(data.prizes || []).map((prize, index) => (
-        <div key={index} style={{ marginBottom: "10px" }}>
-          <input placeholder="Rank (e.g., 1st Place)" value={prize.rank} onChange={(e) => {
-            const updated = [...data.prizes];
-            updated[index].rank = e.target.value;
-            update({...data, prizes: updated});
-          }} />
-          <input placeholder="Reward/Amount" value={prize.reward} onChange={(e) => {
-            const updated = [...data.prizes];
-            updated[index].reward = e.target.value;
-            update({...data, prizes: updated});
-          }} />
+    <>
+      <h3>Prizes & Rewards</h3>
+      {prizes.map((p, idx) => (
+        <div key={idx} style={{ display: "flex", gap: "10px", marginBottom: "10px" }}>
+          <input 
+            type="text" 
+            placeholder="Rank (e.g. 1st Place)" 
+            value={p.rank} 
+            onChange={(e) => updatePrize(idx, "rank", e.target.value)} 
+          />
+          <input 
+            type="text" 
+            placeholder="Reward (e.g. $1,000 + Swags)" 
+            value={p.reward} 
+            onChange={(e) => updatePrize(idx, "reward", e.target.value)} 
+          />
         </div>
       ))}
-      <button onClick={addPrize}>+ Add Prize</button>
-    </div>
+      <button type="button" onClick={addPrize} className="btn-prev" style={{ marginTop: "8px" }}>
+        + Add Prize Tier
+      </button>
+    </>
   );
 }
-export default PrizesStep;

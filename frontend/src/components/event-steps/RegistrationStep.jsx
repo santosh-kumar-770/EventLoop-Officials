@@ -1,13 +1,23 @@
-function RegistrationStep({ data, update }) {
+export default function RegistrationStep({ data, update }) {
   return (
-    <div>
-      <h3>Registration</h3>
-      <label>
-        <input type="checkbox" checked={data.registration_required || false} onChange={(e) => update({...data, registration_required: e.target.checked})} />
-        Registration Required?
+    <>
+      <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer" }}>
+        <input 
+          type="checkbox" 
+          checked={data.registration_required ?? true} 
+          onChange={(e) => update({ ...data, registration_required: e.target.checked })} 
+          style={{ width: "auto" }}
+        />
+        Registration Required for this Event
       </label>
-      <input type="number" placeholder="Max Participants" onChange={(e) => update({...data, max_participants: e.target.value})} style={{ width: "100%", padding: "10px", margin: "10px 0" }} />
-    </div>
+
+      <label>Maximum Participants Allowed</label>
+      <input 
+        type="number" 
+        placeholder="500" 
+        value={data.max_participants || ""} 
+        onChange={(e) => update({ ...data, max_participants: e.target.value })} 
+      />
+    </>
   );
 }
-export default RegistrationStep;

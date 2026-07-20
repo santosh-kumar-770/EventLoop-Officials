@@ -1,27 +1,38 @@
-function SpeakersStep({ data, update }) {
+export default function SpeakersStep({ data, update }) {
+  const speakers = data.speakers || [];
+
   const addSpeaker = () => {
-    update({ ...data, speakers: [...(data.speakers || []), { name: "", designation: "" }] });
+    update({ ...data, speakers: [...speakers, { name: "", designation: "" }] });
+  };
+
+  const updateSpeaker = (index, field, value) => {
+    const updated = [...speakers];
+    updated[index][field] = value;
+    update({ ...data, speakers: updated });
   };
 
   return (
-    <div>
-      <h3>Speakers / Mentors</h3>
-      {(data.speakers || []).map((speaker, index) => (
-        <div key={index} style={{ marginBottom: "10px" }}>
-          <input placeholder="Speaker Name" value={speaker.name} onChange={(e) => {
-            const updated = [...data.speakers];
-            updated[index].name = e.target.value;
-            update({...data, speakers: updated});
-          }} />
-          <input placeholder="Designation/Company" value={speaker.designation} onChange={(e) => {
-            const updated = [...data.speakers];
-            updated[index].designation = e.target.value;
-            update({...data, speakers: updated});
-          }} />
+    <>
+      <h3>Speakers & Mentors</h3>
+      {speakers.map((s, idx) => (
+        <div key={idx} style={{ display: "flex", gap: "10px", marginBottom: "10px" }}>
+          <input 
+            type="text" 
+            placeholder="Speaker Name" 
+            value={s.name} 
+            onChange={(e) => updateSpeaker(idx, "name", e.target.value)} 
+          />
+          <input 
+            type="text" 
+            placeholder="Designation / Company" 
+            value={s.designation} 
+            onChange={(e) => updateSpeaker(idx, "designation", e.target.value)} 
+          />
         </div>
       ))}
-      <button onClick={addSpeaker}>+ Add Speaker</button>
-    </div>
+      <button type="button" onClick={addSpeaker} className="btn-prev" style={{ marginTop: "8px" }}>
+        + Add Speaker
+      </button>
+    </>
   );
 }
-export default SpeakersStep;

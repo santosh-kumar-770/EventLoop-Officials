@@ -1,14 +1,23 @@
-function EligibilityStep({ data, update }) {
+export default function EligibilityStep({ data, update }) {
   return (
-    <div>
-      <h3>Eligibility</h3>
-      <select onChange={(e) => update({...data, target_audience: e.target.value})} style={{ width: "100%", padding: "10px" }}>
+    <>
+      <label>Target Audience / Who Can Participate?</label>
+      <select 
+        value={data.target_audience || "students"} 
+        onChange={(e) => update({ ...data, target_audience: e.target.value })}
+      >
         <option value="students">College Students</option>
-        <option value="professionals">Professionals</option>
+        <option value="professionals">Working Professionals</option>
         <option value="everyone">Everyone</option>
       </select>
-      <textarea placeholder="Skills Required (comma separated)" onChange={(e) => update({...data, skills: e.target.value})} style={{ width: "100%", padding: "10px", margin: "10px 0" }} />
-    </div>
+
+      <label>Required Skills or Prerequisites</label>
+      <textarea 
+        rows="3" 
+        placeholder="Basic Python, React, or system design knowledge..." 
+        value={data.skills || ""} 
+        onChange={(e) => update({ ...data, skills: e.target.value })} 
+      />
+    </>
   );
 }
-export default EligibilityStep;

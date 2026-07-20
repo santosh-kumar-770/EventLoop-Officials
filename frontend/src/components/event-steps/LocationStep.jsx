@@ -1,28 +1,45 @@
-function LocationStep({ data, update }) {
-  const setLocation = (key, value) => {
+export default function LocationStep({ data, update }) {
+  const loc = data.location_data || { type: "offline" };
+
+  const handleChange = (field, value) => {
     update({
       ...data,
-      location_data: { ...(data.location_data || {}), [key]: value }
+      location_data: { ...loc, [field]: value }
     });
   };
 
   return (
-    <div>
-      <h3>Location</h3>
-      <select onChange={(e) => setLocation("type", e.target.value)} style={{ width: "100%", padding: "10px" }}>
-        <option value="offline">Offline</option>
-        <option value="online">Online</option>
+    <>
+      <label>Event Format *</label>
+      <select value={loc.type} onChange={(e) => handleChange("type", e.target.value)}>
+        <option value="offline">Offline / In-Person</option>
+        <option value="online">Online / Virtual</option>
+        <option value="hybrid">Hybrid</option>
       </select>
 
-      {data.location_data?.type === "online" ? (
-        <input placeholder="Meeting Link (Zoom/Meet)" onChange={(e) => setLocation("link", e.target.value)} style={{ width: "100%", padding: "10px", margin: "10px 0" }} />
-      ) : (
+      {loc.type !== "online" && (
         <>
-          <input placeholder="Venue Name" onChange={(e) => setLocation("venue", e.target.value)} style={{ width: "100%", padding: "10px", margin: "10px 0" }} />
-          <input placeholder="City" onChange={(e) => setLocation("city", e.target.value)} style={{ width: "100%", padding: "10px", margin: "10px 0" }} />
+          <label>Venue Name & Address</label>
+          <input 
+            type="text" 
+            placeholder="e.g. Convention Center, Hall 4" 
+            value={loc.venue || ""} 
+            onChange={(e) => handleChange("venue", e.target.value)} 
+          />
         </>
       )}
-    </div>
+
+      {loc.type !== "offline" && (
+        <>
+          <label>Meeting / Virtual Platform Link</label>
+          <input 
+            type="url" 
+            placeholder="https://zoom.us/j/..." 
+            value={loc.link || ""} 
+            onChange={(e) => handleChange("link", e.target.value)} 
+          />
+        </>
+      )}
+    </>
   );
 }
-export default LocationStep;

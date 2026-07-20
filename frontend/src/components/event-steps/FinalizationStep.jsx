@@ -1,17 +1,27 @@
-function FinalizationStep({ data, update }) {
+export default function FinalizationStep({ data, update }) {
   return (
-    <div>
-      <h3>Certificates & Terms</h3>
-      <label>
-        <input type="checkbox" onChange={(e) => update({...data, certificates: e.target.checked})} />
-        Provide Certificates?
+    <>
+      <h3>Final Checks & Terms</h3>
+      
+      <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", marginTop: "12px" }}>
+        <input 
+          type="checkbox" 
+          checked={data.certificates || false} 
+          onChange={(e) => update({ ...data, certificates: e.target.checked })} 
+          style={{ width: "auto" }}
+        />
+        Digital Certificates will be provided to attendees
       </label>
-      <br/>
-      <label>
-        <input type="checkbox" required onChange={(e) => update({...data, terms: e.target.checked})} />
-        Accept Terms & Privacy Policy
+
+      <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", marginTop: "12px" }}>
+        <input 
+          type="checkbox" 
+          checked={data.terms || false} 
+          onChange={(e) => update({ ...data, terms: e.target.checked })} 
+          style={{ width: "auto" }}
+        />
+        I accept the Terms & Conditions and Privacy Policy *
       </label>
-    </div>
+    </>
   );
 }
-export default FinalizationStep;

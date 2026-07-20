@@ -18,8 +18,10 @@ function Login() {
       localStorage.setItem("access_token", res.data.access);
       localStorage.setItem("refresh_token", res.data.refresh);
       navigate("/");
-    } catch {
-      setError("Invalid username or password");
+    } catch (err) {
+      // Catch specific backend error message (e.g. unverified email check)
+      const errorMsg = err.response?.data?.error || "Invalid username or password";
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }

@@ -1,28 +1,38 @@
-function ScheduleStep({ data, update }) {
+export default function ScheduleStep({ data, update }) {
+  const schedule = data.schedule || [];
+
   const addSession = () => {
-    const newSchedule = [...(data.schedule || []), { time: "", activity: "" }];
-    update({ ...data, schedule: newSchedule });
+    update({ ...data, schedule: [...schedule, { time: "", activity: "" }] });
+  };
+
+  const updateSession = (index, field, value) => {
+    const updated = [...schedule];
+    updated[index][field] = value;
+    update({ ...data, schedule: updated });
   };
 
   return (
-    <div>
-      <h3>Agenda / Schedule</h3>
-      {(data.schedule || []).map((session, index) => (
-        <div key={index} style={{ marginBottom: "10px" }}>
-          <input placeholder="Time (e.g., 10:00 AM)" value={session.time} onChange={(e) => {
-            const updated = [...data.schedule];
-            updated[index].time = e.target.value;
-            update({...data, schedule: updated});
-          }} />
-          <input placeholder="Activity" value={session.activity} onChange={(e) => {
-            const updated = [...data.schedule];
-            updated[index].activity = e.target.value;
-            update({...data, schedule: updated});
-          }} />
+    <>
+      <h3>Event Agenda & Schedule</h3>
+      {schedule.map((item, idx) => (
+        <div key={idx} style={{ display: "flex", gap: "10px", marginBottom: "10px" }}>
+          <input 
+            type="text" 
+            placeholder="Time (e.g. 10:00 AM)" 
+            value={item.time} 
+            onChange={(e) => updateSession(idx, "time", e.target.value)} 
+          />
+          <input 
+            type="text" 
+            placeholder="Activity Name" 
+            value={item.activity} 
+            onChange={(e) => updateSession(idx, "activity", e.target.value)} 
+          />
         </div>
       ))}
-      <button onClick={addSession}>+ Add Session</button>
-    </div>
+      <button type="button" onClick={addSession} className="btn-prev" style={{ marginTop: "8px" }}>
+        + Add Agenda Session
+      </button>
+    </>
   );
 }
-export default ScheduleStep;

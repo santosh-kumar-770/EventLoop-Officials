@@ -13,6 +13,7 @@ import Chat from "../pages/Chat";
 import MainLayout from "../layout/MainLayout";
 import EventLobby from "../pages/EventLobby";
 import Settings from "../pages/Settings";
+import VerifyEmail from "../pages/VerifyEmail";
 
 // Protects routes — redirects to /login if not logged in
 function PrivateRoute({ children }) {
@@ -80,6 +81,7 @@ function AppRouter() {
         <Route path="/events/:eventId/lobby" element={
           <PrivateRoute><MainLayout><EventLobby /></MainLayout></PrivateRoute>
         } />
+        <Route path="/verify-email" element={<VerifyEmail />} />
 
       </Routes>
     </BrowserRouter>
