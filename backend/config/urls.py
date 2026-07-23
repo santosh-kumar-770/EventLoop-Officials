@@ -5,15 +5,19 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
+
+    # Admin
     path('admin/', admin.site.urls),
+
+    # Application APIs
     path('api/events/', include('apps.events.urls')),
-    path('api/registrations/', include('apps.registrations.urls')), # This handles the registration routes
+    path('api/registrations/', include('apps.registrations.urls')),
     path('api/connections/', include('apps.connections.urls')),
     path('api/users/', include('apps.users.urls')),
     path('api/dashboard/', include('apps.dashboard.urls')),
     path('api/messaging/', include('apps.messaging.urls')),
 
-    # Auth endpoints
+    # Authentication
     path('api/auth/login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ]
